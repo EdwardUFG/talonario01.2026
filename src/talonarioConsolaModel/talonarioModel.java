@@ -1,22 +1,23 @@
 package talonarioConsolaModel; 
 
 public class talonarioModel {
-	
+    
     private int id;
     private String carnet;
     private String descripcion;
     private String fecha;
+    private String estado; 
 
-    // Constructor vacío corregido
+    // Constructor vacío
     public talonarioModel() {
     }
 
-    // Constructor con parámetros corregido
-    public talonarioModel(int id, String carnet, String descripcion, String fecha) {
-        this.id = id;
+
+    public talonarioModel(String carnet, String descripcion, String fecha, String estado) {
         this.carnet = carnet;
         this.descripcion = descripcion;
         this.fecha = fecha;
+        this.estado = estado;
     }
 
     // Getters y Setters
@@ -50,5 +51,13 @@ public class talonarioModel {
 
     public void setFecha(String fecha) {
         this.fecha = fecha;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 }

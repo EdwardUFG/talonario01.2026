@@ -1,53 +1,115 @@
-package talonarioConsolaServices; 
+package talonarioConsolaServices;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-// 1. Corregido: Importación completa de la clase del modelo
-import talonarioConsolaModel.talonarioModel; 
+import talonarioConexion.ConexionMySQL;
+import talonarioConsolaModel.talonarioModel;
 
 public class talonarioServicesImpl implements ITalonarioService {
-	
-	// 2. Corregido: Cambiado Talonario por talonarioModel
-	private List<talonarioModel> talonarios;
-	
-	// 3. Corregido: El nombre del constructor debe ser EXACTO al de la clase
-	public talonarioServicesImpl() {
-		this.talonarios = new LinkedList<>();
-	}
 
-	@Override
-	public boolean guardar(talonarioModel talonario) {
-		return talonarios.add(talonario);
-	}
+    private ConexionMySQL conexionDB = new ConexionMySQL();
 
-	@Override
-	public talonarioModel recuperar(talonarioModel talonario) {
-		for (talonarioModel t : talonarios) {
-			if (t.getId() == talonario.getId()) {
-				return t;
-			}
-		}
-		return null;
-	}
-	
-	@Override
-	public List<talonarioModel> recuperarTalonarios() {
-		return talonarios;
-	}
+    @Override
+    public boolean guardar(talonarioModel talonario) {
+        String sql = "INSERT INTO talonario (carnet, descripcion, fecha, estado) VALUES (?, ?, ?, ?)";
+        try (Connection con = conexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, talonario.getCarnet());
+            ps.setString(2, talonario.getDescripcion());
+            ps.setString(3, talonario.getFecha());
+            ps.setString(4, talonario.getEstado());
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al guardar: " + e.getMessage());
+            return false;
+        }
+    }
 
-	@Override
-	public talonarioModel modificar(talonarioModel talonario) {
-		for (int i = 0; i < talonarios.size(); i++) {
-			if (talonarios.get(i).getId() == talonario.getId()) {
-				talonarios.set(i, talonario);
-				return talonario;
-			}
-		}
-		return null;
-	}
+    @Override
+    public List<talonarioModel> recuperarTalonarios() {
+        List<talonarioModel> lista = new LinkedList<>();
+        String sql = "SELECT * FROM talonario";
+        try (Connection con = conexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                talonarioModel t = new talonarioModel();
+                t.setId(rs.getInt("id"));
+                t.setCarnet(rs.getString("carnet"));
+                t.setDescripcion(rs.getString("descripcion"));
+                t.setFecha(rs.getString("fecha"));
+                t.setEstado(rs.getString("estado"));
+                lista.add(t);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al recuperar lista: " + e.getMessage());
+        }
+        return lista;
+    }
 
-	@Override
-	public boolean eliminar(talonarioModel talonario) {
-		return talonarios.removeIf(t -> t.getId() == talonario.getId());
-	}
+    @Override
+    public talonarioModel modificar(talonarioModel talonario) {
+        String sql = "UPDATE talonario SET carnet=?, descripcion=?, fecha=?, estado=? WHERE id=?";
+        try (Connection con = conexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, talonario.getCarnet());
+            ps.setString(2, talonario.getDescripcion());
+            ps.setString(3, talonario.getFecha());
+            ps.setString(4, talonario.getEstado());
+            ps.setInt(5, talonario.getId());
+            
+            if (ps.executeUpdate() > 0) return talonario;
+            
+        } catch (SQLException e) {
+            System.out.println("Error al modificar: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public boolean eliminar(talonarioModel talonario) {
+        String sql = "DELETE FROM talonario WHERE id = ?";
+        try (Connection con = conexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, talonario.getId());
+            return ps.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public talonarioModel recuperar(talonarioModel talonario) {
+        String sql = "SELECT * FROM talonario WHERE id = ?";
+        try (Connection con = conexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, talonario.getId());
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                talonarioModel t = new talonarioModel();
+                t.setId(rs.getInt("id"));
+                t.setCarnet(rs.getString("carnet"));
+                t.setDescripcion(rs.getString("descripcion"));
+                t.setFecha(rs.getString("fecha"));
+                t.setEstado(rs.getString("estado"));
+                return t;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al recuperar uno: " + e.getMessage());
+        }
+        return null;
+    }
 }

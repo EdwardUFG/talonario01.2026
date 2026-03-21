@@ -5,8 +5,7 @@ import java.util.List;
 import talonarioConsolaModel.talonarioModel; 
 
 public interface ITalonarioService {
-    
-    // Corregido: Cambiamos "Talonario" por "talonarioModel"
+
     public boolean guardar(talonarioModel talonario);
     
     public talonarioModel recuperar(talonarioModel talonario);
