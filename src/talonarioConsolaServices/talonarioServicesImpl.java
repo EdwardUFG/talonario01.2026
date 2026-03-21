@@ -30,6 +30,29 @@ public class talonarioServicesImpl implements ITalonarioService {
             return false;
         }
     }
+    
+    @Override
+    public talonarioModel modificar(talonarioModel talonario) {
+        ConexionMySQL conexion = new ConexionMySQL();
+  
+        String sql = "UPDATE talonario SET descripcion=?, fecha=?, estado=? WHERE carnet=?";
+        
+        try (Connection con = conexion.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, talonario.getDescripcion());
+            ps.setString(2, talonario.getFecha());
+            ps.setString(3, talonario.getEstado());
+            ps.setString(4, talonario.getCarnet());
+            
+            int filas = ps.executeUpdate();
+            if (filas > 0) return talonario; 
+            
+        } catch (SQLException e) {
+            System.out.println("Error en SQL: " + e);
+        }
+        return null;
+    }
 
     @Override
     public List<talonarioModel> recuperarTalonarios() {
@@ -54,26 +77,8 @@ public class talonarioServicesImpl implements ITalonarioService {
         return lista;
     }
 
-    @Override
-    public talonarioModel modificar(talonarioModel talonario) {
-        String sql = "UPDATE talonario SET carnet=?, descripcion=?, fecha=?, estado=? WHERE id=?";
-        try (Connection con = conexionDB.getConexion();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
-            ps.setString(1, talonario.getCarnet());
-            ps.setString(2, talonario.getDescripcion());
-            ps.setString(3, talonario.getFecha());
-            ps.setString(4, talonario.getEstado());
-            ps.setInt(5, talonario.getId());
-            
-            if (ps.executeUpdate() > 0) return talonario;
-            
-        } catch (SQLException e) {
-            System.out.println("Error al modificar: " + e.getMessage());
-        }
-        return null;
-    }
-
+  
+    
     @Override
     public boolean eliminar(talonarioModel talonario) {
         String sql = "DELETE FROM talonario WHERE id = ?";
